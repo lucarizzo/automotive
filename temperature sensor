@@ -1,5 +1,6 @@
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
+int i
 
 int outputpin= A0;// initializes the output pin of the LM35 temperature sensor
 #define URL "http://<<ip>>:8080/sensorreading"
