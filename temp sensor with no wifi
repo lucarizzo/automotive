@@ -1,6 +1,7 @@
+// it is possible that wifi doesn't work in every place 
+
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
-int i
 
 int outputpin= A0;// initializes the output pin of the LM35 temperature sensor
 #define URL "http://<<ip>>:8080/sensorreading"
@@ -10,38 +11,39 @@ void setup() {
   Serial.begin(115200);//Serial connection
   WiFi.begin("<<user-name>>", "<<password>>"); //WiFi connection
  
-  while (WiFi.status() != WL_CONNECTED) {  //Wait for the WiFI connection completion
+}
+ 
+void loop() {
+ 
+    char stringa[30]; // in this string i will write a point everytime that the motor's temperature is major than 95°
+    int analogTemp = analogRead(outputpin);
+    float millivolts = (analogTemp/1024.0) * 3300; //3300 is the voltage provided by NodeMCU
+    float celsius = millivolts/10;
+    if (celsius > 95) {
+    int i = 0;
+    stringa[i] = '.';
+    i++;
+    }
+    
+     while (WiFi.status() != WL_CONNECTED) {  //Wait for the WiFI connection completion
  
     delay(500);
     Serial.println("Waiting for connection");
  
   }
- 
-}
- 
-void loop() {
- 
- if(WiFi.status()== WL_CONNECTED){   //Check WiFi connection status
-
-    int analogTemp = analogRead(outputpin);
-    float millivolts = (analogTemp/1024.0) * 3300; //3300 is the voltage provided by NodeMCU
-    float celsius = millivolts/10;
-    Serial.println(celsius);
     
-    String payload = "{\"sensor\":\"sensorA\"";
-    payload += ",\"temp\":\"";
-    payload += celsius;
-    payload += "\"}";
- 
+    if(WiFi.status()== WL_CONNECTED){   //Check WiFi connection status
+
+    
     Serial.print("Sending payload: ");
-    Serial.println(payload);
+    Serial.println(stringa);
     
     HTTPClient http;    //Declare object of class HTTPClient
  
     http.begin(URL);      //Specify request destination
     http.addHeader("Content-Type", "application/json");  //Specify content-type header
  
-    int httpCode = http.POST(payload);   //Send the request
+    int httpCode = http.POST(stringa);   //Send the request
     String response = http.getString();                  //Get the response payload
  
     Serial.println(httpCode);   //Print HTTP return code
@@ -54,9 +56,5 @@ void loop() {
     Serial.println("Error in WiFi connection");   
  
  }
-
- //Send temperature reading at every 5 minutes
- for(int i=0;i<60*5;i++)
-   delay(1000);  
  
 }
